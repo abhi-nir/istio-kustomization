@@ -1,0 +1,41 @@
+resources:
+  - all.yaml
+patchesStrategicMerge:
+- |-
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      namespace: istio-operator
+      name: istio-operator
+    spec:
+      replicas: 1
+      revisionHistoryLimit: 10
+      selector:
+        matchLabels:
+          name: istio-operator
+      template:
+        metadata:
+          labels:
+            name: istio-operator
+        spec:
+          serviceAccountName: istio-operator
+          containers:
+            - name: istio-operator
+              image: gcr.io/istio-testing/operator:1.14-dev
+              command:
+              - operator
+              - server
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop:
+                  - ALL
+                privileged: false
+                readOnlyRootFilesystem: true
+                runAsGroup: 1337
+                runAsUser: 1337
+                runAsNonRoot: true
+              imagePullPolicy: IfNotPresent
+              resources:
+                limits:
+                $patch: delete
